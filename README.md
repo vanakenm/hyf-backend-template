@@ -2,6 +2,21 @@
 
 This project template facilitates the development of web applications using Express.js and MySQL. It includes user authentication via cookies and provides a foundation for building APIs to manage recipes or similar entities.
 
+## Getting started
+
+- Create a new project based on this template for your team: https://github.com/new?template_name=hyf-backend-template&template_owner=vanakenm (once)
+- Clone your new project locally (everyone)
+- Locally run:
+
+    npm i
+    npm run dev
+
+This should get you a server running on port 5000. To test, open your browser and go to:
+
+    http://localhost:5000/recipes
+
+You should see a list of recipes.
+
 ## Introduction
 
 This template is designed to help developers create a robust web application backend using Express.js and MySQL. It focuses on user registration, authentication, and authorization, allowing authenticated users to manage recipes (or similar entities) through defined APIs.
