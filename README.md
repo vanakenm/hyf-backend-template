@@ -9,6 +9,7 @@ This project template facilitates the development of web applications using Expr
 - Locally run:
 
     npm i
+    
     npm run dev
 
 This should get you a server running on port 5000. To test, open your browser and go to:
