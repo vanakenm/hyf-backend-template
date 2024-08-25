@@ -4,15 +4,11 @@ import cookieParser from 'cookie-parser';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
-import createUserTable from './models/user.js';
-import createRecipeTable from './models/recipe.js';
-
 // import routes
-import userRoutes from './routes/user.js';
 import recipeRoutes from './routes/recipe.js';
 
 // set port
-const PORT = process.env.PORT || 5009;
+const PORT = process.env.PORT || 5000;
 
 // Construct path
 const __filename = fileURLToPath(import.meta.url);
@@ -30,11 +26,21 @@ app.use(cookieParser());
 app.use(express.static(path.join(PATH, 'public')));
 
 // create tables
-createUserTable();
-createRecipeTable();
+// createUserTable();
+// createRecipeTable();
 
 // use routes
-app.use(userRoutes);
+// app.use(userRoutes);
+
+app.use(function (req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header(
+        'Access-Control-Allow-Headers',
+        'Origin, X-Requested-With, Content-Type, Accept'
+    );
+    next();
+});
+
 app.use(recipeRoutes);
 
 // error

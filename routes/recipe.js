@@ -1,9 +1,10 @@
 import express from 'express';
-import verifyToken from '../middleware/verifyToken.js';
 import recipeControllers from '../controllers/recipe.js';
 
 const router = express.Router();
 
-// routes
+router.get('/recipes', async function (req, res, next) {
+    res.json(await recipeControllers.getAllRecipes());
+});
 
 export default router;
