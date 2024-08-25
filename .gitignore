@@ -1,0 +1,37 @@
+# Dependency directories
+node_modules/
+
+# Environment variables file
+.env
+
+# IDE/editor specific files
+.vscode/
+.idea/
+
+# macOS specific files
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Runtime data
+pids/
+*.pid
+*.pid.lock
+
+# Build output
+build/
+dist/
+
+# dotenv environment variables file
+.env.local
+
+# dotenv environment variables file that should remain in source control unless explicity ignored.
+.env.development
+.env.test
+.env.production
+
+# Docker
+docker-compose.yml
+.DS_Store
