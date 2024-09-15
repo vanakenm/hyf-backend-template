@@ -3,7 +3,7 @@ import query from '../config/db.js';
 
 const router = express.Router();
 
-// Receive box offers for a period of time
+// Получение предложений за период времени
 router.get('/', async (req, res) => {
     const { startDate, endDate } = req.query;
     
@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
         const offers = await query(sql, [startDate, endDate]);
         res.json(offers);
     } catch (err) {
-        res.status(500).json({ error: 'Error receiving offers for boxes' });
+        res.status(500).json({ error: 'Ошибка получения предложений' });
     }
 });
 

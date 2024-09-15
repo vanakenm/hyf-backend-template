@@ -3,12 +3,14 @@ import bodyParser from 'body-parser';
 import offersRoutes from './routes/offers.js';
 import reservationsRoutes from './routes/reservations.js';
 import boxesRoutes from './routes/boxes.js';
+import usersRoutes from './routes/user.js';
 
 const app = express();
 app.use(bodyParser.json());
 
 app.use('/offers', offersRoutes);
 app.use('/reservations', reservationsRoutes);
+app.use('/user', usersRoutes);
 app.use('/boxes', boxesRoutes);
 
 app.listen(5000, () => {
