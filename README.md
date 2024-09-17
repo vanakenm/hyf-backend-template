@@ -4,12 +4,18 @@ This project template facilitates the development of web applications using Expr
 
 ## Getting started
 
-- Create a new project based on this template for your team: https://github.com/new?template_name=hyf-backend-template&template_owner=vanakenm (once)
-- Clone your new project locally (everyone)
+- Clone project locally:
+
+```
+git clone https://github.com/juryp/hyf-CareFood-backend.git
+```
+
+nodejs 20.x version required
+
 - Locally run:
 
     npm i
-    
+
     npm run dev
 
 This should get you a server running on port 5000. To test, open your browser and go to:
@@ -33,8 +39,8 @@ This template is designed to help developers create a robust web application bac
 
 ```plaintext
 Project/
-|-- config/
-|   ├── db.js           # Database configuration
+├── config
+│   ├── db.js           # Database configuration
 |-- controllers/
 |   ├── userController.js       # Handles user-related operations
 |
@@ -43,7 +49,12 @@ Project/
 |-- models/
 |   ├── user.js          # Defines user schema for MySQL
 |-- routes/
-|   ├── userRoutes.js    # Routes for user-related endpoints
+├── routes
+│   ├── boxes.js    # Routes for boxes manipulations
+│   ├── offers.js   # Routes for offers operations
+│   ├── recipe.js
+│   ├── reservations.js # Routes for Reserv and issue and history
+│   └── user.js   # Routes for auth and login
 |
 |-- utils/
 |   ├── hashPassword.js      # Utility to hash user passwords
@@ -59,10 +70,9 @@ Project/
 
 ## Setup Instructions
 
-1. **Use this Template Repo:**
-   [Use this template to create your repo](https://github.com/HackYourFutureBelgium/node-template)
+1. **Install dependencies:**
 
-2. **Install dependencies:**
+nodejs 20.x version required
 
    ```bash
    npm install
@@ -81,10 +91,86 @@ Project/
      ```
 
 4. **Create a database:**
-    ```sql
-    CREATE DATABASE your_database_name;
-    ```
-    
+
+  ```sql
+    CREATE DATABASE carefood;
+  ```
+
+Create users table
+
+```sql
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    login VARCHAR(100) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    password VARCHAR(100) NOT NULL,
+    preferences VARCHAR(20)
+  );
+```
+
+Create providers table
+
+```sql
+CREATE TABLE providers (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    login VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(100) NOT NULL,
+    email VARCHAR(100),
+    phone VARCHAR(20),
+    address VARCHAR(255) NOT NULL,
+    coordinates VARCHAR(100),
+    description TEXT
+);
+```
+
+Create boxes table:
+
+```sql
+CREATE TABLE boxes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    provider_id INT,
+    type VARCHAR(20),
+    description TEXT,
+    FOREIGN KEY (provider_id) REFERENCES providers(id)
+);
+```
+
+Create weekly plans table:
+
+```sql
+CREATE TABLE weekly_plans (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    provider_id INT,
+    week_start DATE,
+    standard_quantity INT,
+    vegan_quantity INT,
+    diabetic_quantity INT,
+    pickup_time TIME,
+    FOREIGN KEY (provider_id) REFERENCES providers(id)
+);
+```
+
+Create reservations table:
+
+```sql
+CREATE TABLE reservations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    box_id INT,
+    provider_id INT,
+    reservation_date DATE,
+    quantity INT,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (box_id) REFERENCES boxes(id),
+    FOREIGN KEY (provider_id) REFERENCES providers(id)
+);
+```
+
+[Back to top](#project-structure)
+
 5. **Run the application:**
 
    ```bash
@@ -108,38 +194,441 @@ DB_HOST=your_database_host
 
 ### User Routes
 
-- **POST /register**
+**POST /auth/register**
 
-  - Registers a new user.
+- Registers a new user.
+  
+  Method POST
+  
+  URL:
 
-- **POST /login**
-  - Logs in an existing user.
+  ```
+  http://localhost:5000/auth/register/user
+  ```
+
+  Body:
+
+  ```json
+  {
+    "login": "johnsm",
+    "name": "John Smith",
+    "email": "johnsm@example.com",
+    "phone": "1234567890",
+    "password": "password123",
+    "preferences": "Standard"
+    }
+  ```
+  
+  Response:
+
+  ```json
+  {
+    "message": "User jury created successfully",
+    "id": 1,
+    "role": "user",
+    "login": "johnsm"
+  }
+
+- Registers a new provider.
+
+  Method POST
+  
+  URL:
+
+  ```
+  http://localhost:5000/auth/register/provider
+  ```
+
+  Body:
+
+    ```json
+    {
+    "name": "Supermarket",
+    "login": "supermarket_login",
+    "email": "contact@supermarket.com",
+    "phone": "9876543210",
+    "password": "providerpass",
+    "address": "123 Main Street",
+    "coordinates": "50.1234, 10.5678",
+    "description": "Food Provider"
+  }
+  ```
+
+  Response:
+
+  ```json
+  {
+    "message": "Provider logged in successfully",
+    "id": 3,
+    "role": "provider",
+    "login": "supermarket_login"
+  }
+  ```
+
+  **POST /auth/login**
+
+- Logs in an existing user/provider.
+
+  ```
+  http://localhost:5000/auth/login
+  ```
+
+  Body:
+
+  ```json
+  {
+    "login": "supermarket_login",
+    "password": "providerpass"
+  }
+  ```
+
+  Respons if successfully:
+
+  ```json
+  {
+    "message": "Provider logged in successfully",
+    "id": 3,
+    "role": "provider",
+    "login": "supermarket_login"
+  }
+  ```
+
+  Respons else:
+
+  ```json
+  {
+    "message": "Invalid login or password"
+  }
+  ```
 
 - **POST /logout**
   - Logout user.
 
-### Recipe Routes
+  ### Offers Routes
 
-- **GET /recipes**
+  **GET /offers**
 
-  - Retrieves all recipes.
+  Method GET
 
-- **POST /recipes**
+  ```
+  http://localhost:5000/offers?startDate=2024-09-14&endDate=2024-09-14
+  ```
 
-  - Creates a new recipe (authenticated users only).
+  Response:
 
-- **GET /recipes/:id**
+  ```json
+  [
+    {
+        "provider_id": 1,
+        "week_start": "2024-09-14T00:00:00.000Z",
+        "standard_quantity": 1,
+        "vegan_quantity": 15,
+        "diabetic_quantity": 0,
+        "pickup_time": "17:30:00"
+    },
+    {
+        "provider_id": 2,
+        "week_start": "2024-09-14T00:00:00.000Z",
+        "standard_quantity": 10,
+        "vegan_quantity": 4,
+        "diabetic_quantity": 2,
+        "pickup_time": "17:30:00"
+    },
+    {
+        "provider_id": 3,
+        "week_start": "2024-09-14T00:00:00.000Z",
+        "standard_quantity": 9,
+        "vegan_quantity": 4,
+        "diabetic_quantity": 2,
+        "pickup_time": "17:30:00"
+    }
+  ]
+  ```
 
-  - Retrieves a single recipe by ID.
+  ### Reservations Routes
 
-- **PUT /recipes/:id**
+- **POST /reservations**
 
-  - Updates a recipe by ID (authenticated users only).
+- Make Reservation (authenticated users only).
 
-- **DELETE /recipes/:id**
-  - Deletes a recipe by ID (authenticated users only).
+  Method POST:
 
-## Controllers
+  ```
+  http://localhost:5000/reservations/
+  ```
+
+  Body:
+
+  ```json
+  {
+    "user_id": 1,
+    "provider_id": 3,
+    "box_id": 1,
+    "reservation_date": "2024-09-14",
+    "quantity": 2
+  }
+  ```
+
+  Response if successfully:
+
+  ```json
+  {
+    "message": "Reservation successfully created"
+  }
+  ```
+
+  Response if not enough boxes:
+
+  ```json
+  {
+    "message": "Not enough boxes available for reservation"
+  }
+  ```
+
+  Show Reserved Boxes by User #1:
+
+  Method GET:
+
+  ```
+  http://localhost:5000/reservations/user/1?date=2024-09-14
+  ```
+
+  Response:
+
+  ```json
+  [
+    {
+        "id": 4,
+        "reservation_date": "2024-09-14T00:00:00.000Z",
+        "quantity": 1,
+        "status": "active",
+        "type": "Standard",
+        "provider_name": "AldiWest",
+        "address": "Rue de Intendant 53, 1080 Molenbeek-Saint-Jean"
+    },
+    {
+        "id": 9,
+        "reservation_date": "2024-09-14T00:00:00.000Z",
+        "quantity": 4,
+        "status": "active",
+        "type": "Standard",
+        "provider_name": "Lidl138Gray",
+        "address": "Rue Gray 138, 1050 Ixelles"
+    }
+  ]
+  ```
+
+  Show Reserved Boxes in Shop 1
+
+  Method POST:
+
+  ```
+  http://localhost:5000/reservations/provider/1?startDate=2024-09-14&endDate=2024-09-14
+  ```
+
+  Response:
+
+  ```json
+  [
+    {
+        "id": 18,
+        "reservation_date": "2024-09-14",
+        "quantity": 1,
+        "status": "active",
+        "type": "Standard",
+        "user_name": "John Doe",
+        "email": "john.doe@example.com"
+    },
+    {
+        "id": 19,
+        "reservation_date": "2024-09-14",
+        "quantity": 2,
+        "status": "active",
+        "type": "Standard",
+        "user_name": "Felix Doe",
+        "email": "felix.doe@example.com"
+    }
+  ]
+  ```
+
+  Issue a Specific Reservation by ID
+
+  Method POST:
+
+  Issue Reservation ID 18
+
+  ```
+  http://localhost:5000/reservations/issue/18
+  ```
+
+  Response:
+
+  ```json
+  {
+    "message": "Reservation has been successfully issued"
+  }
+  ```
+
+  Issue All Reservations for a User on a Specific Date
+
+  Method POST:
+
+  ```
+  http://localhost:5000/reservations/issue/all
+  ```
+
+  Body:
+
+  ```json
+  {
+    "provider_id": 1,
+    "user_id": 2,
+    "issue_date": "2024-09-14"
+  }
+  ```
+
+  Response:
+
+  ```json
+  {
+    "message": "All reservations for the user on this date have been issued"
+  }
+  ```
+
+  **Reservation History**
+
+  For Providers:
+
+  Method GET:
+
+  ```
+  http://localhost:5000/reservations/provider/1/history?startDate=2024-09-15&endDate=2024-09-17
+  ```
+
+  Respons:
+
+  ```json
+  [
+    {
+        "id": 9,
+        "issued_date": "2024-09-17T00:00:00.000Z",
+        "quantity": 4,
+        "type": "Standard",
+        "user_name": "John Smith",
+        "email": "john@example.com"
+    },
+    {
+        "id": 10,
+        "issued_date": "2024-09-17T00:00:00.000Z",
+        "quantity": 2,
+        "type": "Diabetic",
+        "user_name": "John Smith",
+        "email": "john@example.com"
+    },
+    {
+        "id": 11,
+        "issued_date": "2024-09-17T00:00:00.000Z",
+        "quantity": 2,
+        "type": "Standard",
+        "user_name": "John Smith",
+        "email": "john@example.com"
+    },
+    {
+        "id": 18,
+        "issued_date": "2024-09-17T00:00:00.000Z",
+        "quantity": 1,
+        "type": "Standard",
+        "user_name": "John Doe",
+        "email": "john.doe@example.com"
+    },
+    {
+        "id": 29,
+        "issued_date": "2024-09-17T00:00:00.000Z",
+        "quantity": 1,
+        "type": "Standard",
+        "user_name": "John Smith",
+        "email": "john@example.com"
+    }
+  ]
+  ```
+
+  For Users:
+
+  Method GET:
+
+  ```
+  http://localhost:5000/reservations/user/1/history?startDate=2024-09-16&endDate=2024-09-17
+  ```
+
+  Respons:
+
+  ```json
+  [
+    {
+        "id": 9,
+        "issued_date": "2024-09-17T00:00:00.000Z",
+        "quantity": 4,
+        "type": "Standard",
+        "provider_name": "Lidl138Gray",
+        "address": "Rue Gray 138, 1050 Ixelles"
+    },
+    {
+        "id": 10,
+        "issued_date": "2024-09-17T00:00:00.000Z",
+        "quantity": 2,
+        "type": "Diabetic",
+        "provider_name": "Lidl138Gray",
+        "address": "Rue Gray 138, 1050 Ixelles"
+    },
+    {
+        "id": 11,
+        "issued_date": "2024-09-17T00:00:00.000Z",
+        "quantity": 2,
+        "type": "Standard",
+        "provider_name": "Lidl138Gray",
+        "address": "Rue Gray 138, 1050 Ixelles"
+    },
+    {
+        "id": 29,
+        "issued_date": "2024-09-17T00:00:00.000Z",
+        "quantity": 1,
+        "type": "Standard",
+        "provider_name": "Lidl138Gray",
+        "address": "Rue Gray 138, 1050 Ixelles"
+    }
+  ]
+  ```
+
+  ### Boxes Routes
+
+  **PUT /boxes/add-boxes**
+
+  Add 7 Standard Boxes for Provider on 14th Sep
+
+  Method PUT:
+
+  ```
+  http://localhost:5000/boxes/add-boxes
+  ```
+
+  Body:
+
+  ```json
+  {
+    "provider_id": 1,
+    "week_start": "2024-09-14",
+    "type": "standard",
+    "quantity": 7
+  }
+  ```
+
+  Response:
+
+  ```json
+  {
+    "message": "Box quantity updated successfully"
+  }
+  ```
 
 ### User Controller
 
